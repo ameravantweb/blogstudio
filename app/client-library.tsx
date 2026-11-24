@@ -1,0 +1,23 @@
+'use client';
+
+import {Check,Download,FileText,Plus,Search,RefreshCw} from 'lucide-react';
+import {ArticleFilter,ClientGroup,RecordItem,articleWordCount} from '@/lib/blog';
+
+function dateLabel(date:string){return new Date(date).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});}
+
+export default function ClientLibrary({groups,clients,query,client,filter,onQuery,onClient,onFilter,onOpen,onNew,onExport,onWorkspace,onRefresh}:{
+  groups:ClientGroup[];clients:ClientGroup[];query:string;client:string;filter:ArticleFilter;
+  onQuery:(value:string)=>void;onClient:(value:string)=>void;onFilter:(value:ArticleFilter)=>void;
+  onOpen:(record:RecordItem)=>void;onNew:(record:RecordItem)=>void;onExport:(record:RecordItem)=>void;onWorkspace:()=>void;onRefresh:()=>void;
+}){
+  const articles=clients.flatMap(group=>group.records);const completed=articles.filter(record=>record.completedAt).length;
+  return <section className="client-library workspace-card" aria-label="Client article library">
+    <div className="library-heading"><p className="library-summary">{articles.length} saved {articles.length===1?'item':'items'} <span>·</span> {completed} completed <span>·</span> {clients.length} {clients.length===1?'client':'clients'}</p><button className="button ghost" onClick={onRefresh}><RefreshCw size={16}/>Refresh shared articles</button></div>
+    <div className="library-filters"><div className="field library-search"><label htmlFor="article-search">Search articles</label><div><Search size={15} aria-hidden="true"/><input id="article-search" value={query} onChange={e=>onQuery(e.target.value)} placeholder="Client, title, topic, or keyword…" type="search"/></div></div><div className="field"><label htmlFor="client-filter">Client</label><select id="client-filter" value={client} onChange={e=>onClient(e.target.value)}><option value="all">All clients</option>{clients.map(group=><option key={group.key} value={group.key}>{group.name}</option>)}</select></div><div className="field"><label htmlFor="article-status">Article status</label><select id="article-status" value={filter} onChange={e=>onFilter(e.target.value as ArticleFilter)}><option value="all">All content</option><option value="completed">Completed</option><option value="draft">Drafts</option><option value="brief">Briefs</option></select></div></div>
+    <div className="library-results" aria-live="polite">{groups.length?groups.map(group=><section key={group.key} className="client-group" aria-label={`${group.name} articles`}><div className="client-group-heading"><div><h3>{group.name}<span className="client-count">{group.records.length}</span></h3></div><button className="button secondary" onClick={()=>onNew(group.records[0])} aria-label={`New article for ${group.name}`}><Plus size={14}/>New article</button></div><div className="client-article-list">{group.records.map(record=>{
+      const article=record.article;const title=article?.title||record.brief.topic||'New article brief';
+      return <div key={record.id} className="client-article"><div className="client-article-info"><h4>{title}</h4><p>{record.image&&<span className="library-image-label">Image included · </span>}{article?`${articleWordCount(article).toLocaleString()} words`:'Article brief'}<span> · </span>{record.completedAt?'Completed ':'Updated '}<time dateTime={record.completedAt||record.updatedAt}>{dateLabel(record.completedAt||record.updatedAt)}</time>{record.owner&&<span> · By {record.owner.name}</span>}</p></div><span className={`article-status ${record.completedAt?'complete':'draft'}`}>{record.completedAt&&<Check size={12}/>} {record.completedAt?'Completed':article?'Draft':'Brief'}</span><div className="library-article-actions"><button className="button ghost" onClick={()=>onExport(record)} aria-label={`Export article: ${title}`}><Download size={17}/></button><button className="button secondary" onClick={()=>onOpen(record)} aria-label={`Open article: ${title}`}>{article?'Open article':'Open brief'}</button></div></div>;
+    })}</div></section>):<div className="library-empty"><FileText size={30}/><h3>{articles.length?'No matching articles.':'Your client article list starts here.'}</h3><p>{articles.length?'Try a different search, client, or status.':'Generate or write an article to add it to this list. Existing saved articles appear automatically.'}</p>{articles.length?<button className="button secondary" onClick={()=>{onQuery('');onClient('all');onFilter('all');}}>Clear filters</button>:<button className="button primary" onClick={onWorkspace}>Go to article workspace</button>}</div>}</div>
+
+  </section>;
+}
