@@ -9,8 +9,8 @@
   "assets": { "binding": "ASSETS", "run_worker_first": true },
   "d1_databases": [{
     "binding": "DB",
-    "database_name": "blog-studio-articles",
-    "database_id": "00000000-0000-4000-8000-000000000000",
+    "database_name": "blogstudio-db",
+    "database_id": "186ce95a-47dc-4221-8ad3-e50f9290a294",
     "migrations_dir": "drizzle"
   }],
   "r2_buckets": [{
